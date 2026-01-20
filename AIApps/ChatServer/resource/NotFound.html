@@ -3,67 +3,324 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>404 Not Found</title>
+<title>404 - 页面未找到</title>
 <style>
-    body {
+    * {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
-        font-family: "Microsoft YaHei", Arial, sans-serif;
-        background-color: #ffffff;
+    }
+
+    body {
+        font-family: "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        min-height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        color: #333;
+        background: linear-gradient(135deg, #0c0f1a 0%, #1a1f3a 50%, #0d1025 100%);
+        overflow: hidden;
+        position: relative;
     }
 
+    /* 动态背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 30% 70%, rgba(0, 195, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 30%, rgba(123, 104, 238, 0.08) 0%, transparent 50%);
+        animation: floatBg 20s ease-in-out infinite;
+        z-index: 0;
+    }
+
+    @keyframes floatBg {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(2%, 2%) rotate(2deg); }
+    }
+
+    /* 星空粒子 */
+    .stars {
+        position: fixed;
+        width: 3px;
+        height: 3px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 3s ease-in-out infinite;
+        z-index: 1;
+    }
+
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.2; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* 浮动光球 */
+    .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 0;
+        animation: orbFloat 15s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 300px;
+        height: 300px;
+        background: rgba(0, 195, 255, 0.2);
+        top: 20%;
+        left: 20%;
+    }
+
+    .orb-2 {
+        width: 250px;
+        height: 250px;
+        background: rgba(123, 104, 238, 0.2);
+        bottom: 20%;
+        right: 20%;
+        animation-delay: -7s;
+    }
+
+    @keyframes orbFloat {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(30px, -20px) scale(1.1); }
+    }
+
+    /* 主容器 */
     .container {
         text-align: center;
-        padding: 30px 40px;
-        background: #f9f9f9;
-        border-radius: 15px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        padding: 50px 60px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+                    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        position: relative;
+        z-index: 10;
+        animation: containerIn 0.6s ease;
     }
 
-    h1 {
-        font-size: 72px;
-        margin: 0;
-        background: linear-gradient(to right, #007bff, #00c6ff);
+    @keyframes containerIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* 404数字 */
+    .error-code {
+        font-size: 140px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #00c3ff 0%, #00ffcc 30%, #7b68ee 70%, #00c3ff 100%);
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 4s ease infinite;
+        text-shadow: 0 0 80px rgba(0, 195, 255, 0.3);
+        position: relative;
     }
 
-    p {
-        font-size: 20px;
-        margin: 20px 0;
-        color: #555;
+    .error-code::after {
+        content: '404';
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background: linear-gradient(135deg, rgba(123, 104, 238, 0.3) 0%, rgba(0, 195, 255, 0.3) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        z-index: -1;
+        filter: blur(8px);
     }
 
-    .btn {
-        display: inline-block;
-        padding: 12px 25px;
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    /* 图标 */
+    .icon-container {
+        margin: 0 auto 25px;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, rgba(0, 195, 255, 0.2) 0%, rgba(123, 104, 238, 0.2) 100%);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    .icon-container svg {
+        width: 40px;
+        height: 40px;
+        color: #00c3ff;
+    }
+
+    /* 文字 */
+    .title {
+        font-size: 26px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 12px;
+        letter-spacing: 1px;
+    }
+
+    .description {
         font-size: 16px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: bold;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 35px;
+        line-height: 1.6;
+    }
+
+    /* 按钮 */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 36px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
         text-decoration: none;
-        transition: all 0.3s;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #00c3ff 0%, #00e1ff 50%, #00ffcc 100%);
+        background-size: 200% 200%;
+        box-shadow: 0 8px 30px rgba(0, 195, 255, 0.35);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
     }
 
     .btn:hover {
-        background-color: #0056b3;
-        transform: scale(1.05);
+        background-position: 100% 50%;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 195, 255, 0.45);
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* 装饰元素 */
+    .decoration {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px solid rgba(0, 195, 255, 0.1);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .decoration-1 {
+        top: -50px;
+        right: -50px;
+        animation: decorFloat 10s ease-in-out infinite;
+    }
+
+    .decoration-2 {
+        bottom: -30px;
+        left: -30px;
+        width: 100px;
+        height: 100px;
+        animation: decorFloat 8s ease-in-out infinite reverse;
+    }
+
+    @keyframes decorFloat {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(10px, -10px) rotate(180deg); }
+    }
+
+    /* 响应式 */
+    @media (max-width: 600px) {
+        .container {
+            padding: 40px 30px;
+            margin: 20px;
+        }
+        .error-code {
+            font-size: 100px;
+        }
+        .title {
+            font-size: 22px;
+        }
     }
 </style>
 </head>
 <body>
-    <div class="container">
-        <h1>404</h1>
-        <p>抱歉，您访问的页面不存在！</p>
-        <a href="/menu" class="btn">返回首页</a>
+
+<!-- 浮动光球 -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+    
+    <div class="icon-container">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M16 16s-1.5-2-4-2-4 2-4 2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
     </div>
+    
+    <div class="error-code">404</div>
+    <h1 class="title">页面走丢了</h1>
+    <p class="description">抱歉，您访问的页面不存在或已被移除</p>
+    
+    <a href="/menu" class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        返回首页
+    </a>
+</div>
+
+<script>
+// 生成星空粒子
+for (let i = 0; i < 50; i++) {
+    const star = document.createElement('div');
+    star.className = 'stars';
+    star.style.top = Math.random() * 100 + 'vh';
+    star.style.left = Math.random() * 100 + 'vw';
+    star.style.animationDuration = (2 + Math.random() * 3) + 's';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    document.body.appendChild(star);
+}
+</script>
 </body>
 </html>

@@ -66,7 +66,19 @@ std::string ImageRecognizer::PredictFromMat(const cv::Mat& img_raw) {
 
     cv::Mat img;
     cv::resize(img_raw, img, cv::Size(input_width, input_height));
+    
+    // BGR -> RGB 转换（OpenCV 默认读取为 BGR，但模型期望 RGB）
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+    
     img.convertTo(img, CV_32F, 1.0 / 255.0);
+
+    // ImageNet 标准化：mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+    std::vector<cv::Mat> channels(3);
+    cv::split(img, channels);
+    channels[0] = (channels[0] - 0.485) / 0.229;  // R
+    channels[1] = (channels[1] - 0.456) / 0.224;  // G
+    channels[2] = (channels[2] - 0.406) / 0.225;  // B
+    cv::merge(channels, img);
 
     // NHWC -> NCHW
     cv::dnn::blobFromImage(img, img);

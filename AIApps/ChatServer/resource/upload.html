@@ -2,227 +2,726 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 图像识别助手</title>
     <style>
-        /* 全局样式 */
-        body {
-            font-family: "Microsoft YaHei", Arial, sans-serif;
-            background: linear-gradient(135deg, #1f1c2c, #928dab);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            color: #fff;
         }
 
-        
+        body {
+            font-family: "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #0c0f1a 0%, #1a1f3a 50%, #0d1025 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* 背景装饰 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 70% 30%, rgba(123, 104, 238, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 30% 70%, rgba(0, 195, 255, 0.08) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 浮动光球 */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: orbFloat 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(123, 104, 238, 0.2);
+            top: 10%;
+            right: 10%;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: rgba(0, 195, 255, 0.15);
+            bottom: 20%;
+            left: 10%;
+            animation-delay: -10s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -20px) scale(1.1); }
+        }
+
+        /* 顶部栏 */
         .top-bar {
-            padding: 12px 20px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(6px);
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 10;
         }
 
         .back-btn {
-            padding: 8px 16px;
+            padding: 10px 18px;
             border: none;
-            border-radius: 8px;
-            background: #00c3ff;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
             cursor: pointer;
             font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 0 8px #00c3ff;
-            transition: all 0.3s ease;
-        }
-        .back-btn:hover {
-            background: #00e1ff;
-            box-shadow: 0 0 15px #00e1ff;
-            transform: scale(1.05);
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .back-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .page-title {
+            margin-left: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #7b68ee 0%, #00c3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 聊天容器 */
         .chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(6px);
+            gap: 16px;
+            position: relative;
+            z-index: 1;
         }
 
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        /* 消息气泡 */
         .message {
             max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            line-height: 1.5;
+            padding: 16px 20px;
+            border-radius: 20px;
+            line-height: 1.7;
             word-wrap: break-word;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             position: relative;
-            animation: fadeIn 0.3s ease;
+            animation: messageIn 0.3s ease;
         }
 
-        .user {
-            background: #00c3ff;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 0;
-        }
-
-        .assistant {
-            background: rgba(255,255,255,0.9);
-            color: #111;
-            align-self: flex-start;
-            border-bottom-left-radius: 0;
-        }
-
-        @keyframes fadeIn {
+        @keyframes messageIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .message img {
-            max-width: 200px;
-            border-radius: 8px;
-            display: block;
-            margin-top: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        .user {
+            background: linear-gradient(135deg, #7b68ee 0%, #9f7aea 100%);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 20px rgba(123, 104, 238, 0.3);
         }
 
-        /* 输入框样式 */
+        .assistant {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1f3a;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .message-header {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .message img {
+            max-width: 280px;
+            border-radius: 12px;
+            display: block;
+            margin-top: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .message img:hover {
+            transform: scale(1.02);
+        }
+
+        /* 识别结果样式 */
+        .result-card {
+            background: linear-gradient(135deg, rgba(0, 195, 255, 0.1) 0%, rgba(123, 104, 238, 0.1) 100%);
+            border: 1px solid rgba(0, 195, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: rgba(26, 31, 58, 0.6);
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7b68ee 0%, #00c3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .confidence-bar {
+            margin-top: 12px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7b68ee, #00c3ff);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* 输入区域 */
         .input-box {
             display: flex;
-            padding: 12px 20px;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(6px);
-            border-top: 1px solid rgba(255,255,255,0.2);
-            gap: 12px;
+            flex-direction: column;
+            padding: 20px 24px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 16px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 拖拽上传区域 */
+        .drop-zone {
+            border: 2px dashed rgba(123, 104, 238, 0.4);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(123, 104, 238, 0.05);
+        }
+
+        .drop-zone:hover {
+            border-color: rgba(123, 104, 238, 0.6);
+            background: rgba(123, 104, 238, 0.1);
+        }
+
+        .drop-zone.drag-over {
+            border-color: #7b68ee;
+            background: rgba(123, 104, 238, 0.2);
+            transform: scale(1.01);
+        }
+
+        .drop-zone-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 15px;
+            opacity: 0.6;
+        }
+
+        .drop-zone-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .drop-zone-hint {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
         }
 
         input[type="file"] {
+            display: none;
+        }
+
+        /* 预览区域 */
+        .preview-container {
+            display: none;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-container.active {
+            display: flex;
+        }
+
+        .preview-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .preview-info {
             flex: 1;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            padding: 6px 10px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        input[type="file"]::file-selector-button {
-            border: none;
-            background: #00c3ff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            color: #fff;
-            cursor: pointer;
-            box-shadow: 0 0 6px #00c3ff;
-            transition: all 0.3s ease;
-        }
-        input[type="file"]::file-selector-button:hover {
-            background: #00e1ff;
-            box-shadow: 0 0 12px #00e1ff;
         }
 
-        button {
-            padding: 0 20px;
-            border: none;
-            border-radius: 8px;
-            background: #00c3ff;
-            color: white;
+        .preview-name {
             font-size: 14px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 0 8px #00c3ff;
-            transition: all 0.3s ease;
-        }
-        button:hover {
-            background: #00e1ff;
-            box-shadow: 0 0 15px #00e1ff;
-            transform: scale(1.05);
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 4px;
         }
 
+        .preview-size {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .preview-remove {
+            padding: 8px;
+            background: rgba(245, 101, 101, 0.2);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #f56565;
+            transition: all 0.2s;
+        }
+
+        .preview-remove:hover {
+            background: rgba(245, 101, 101, 0.3);
+        }
+
+        .preview-remove svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 提交按钮 */
+        .submit-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #7b68ee 0%, #9f7aea 100%);
+            color: #fff;
+            font-weight: 600;
+            font-size: 15px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(123, 104, 238, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(123, 104, 238, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 加载动画 */
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            border-bottom-left-radius: 6px;
+            align-self: flex-start;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(123, 104, 238, 0.2);
+            border-top-color: #7b68ee;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #1a1f3a;
+            font-size: 14px;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .message {
+                max-width: 85%;
+            }
+            .message img {
+                max-width: 200px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    
+    <!-- 浮动光球 -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- 顶部栏 -->
     <div class="top-bar">
-        <button class="back-btn" onclick="window.location.href='/menu'">← 返回</button>
+        <button class="back-btn" onclick="window.location.href='/menu'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            返回
+        </button>
+        <span class="page-title">AI 图像识别助手</span>
     </div>
 
-    
-    <div class="chat-container" id="chat-container"></div>
+    <!-- 聊天区域 -->
+    <div class="chat-container" id="chat-container">
+        <div class="empty-state" id="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <p>上传图片开始识别</p>
+        </div>
+    </div>
 
-    
+    <!-- 上传区域 -->
     <form class="input-box" id="upload-form">
-        <input type="file" id="image-input" accept="image/*" required>
-        <button type="submit">发送图片</button>
+        <div class="drop-zone" id="drop-zone">
+            <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="drop-zone-text">点击或拖拽图片到此处</p>
+            <p class="drop-zone-hint">支持 JPG、PNG、GIF 等格式</p>
+        </div>
+        <input type="file" id="image-input" accept="image/*">
+        
+        <div class="preview-container" id="preview-container">
+            <img class="preview-image" id="preview-image" src="" alt="预览">
+            <div class="preview-info">
+                <div class="preview-name" id="preview-name"></div>
+                <div class="preview-size" id="preview-size"></div>
+            </div>
+            <button type="button" class="preview-remove" id="preview-remove">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <button type="submit" class="submit-btn" id="submit-btn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            开始识别
+        </button>
     </form>
 
     <script>
         const chatContainer = document.getElementById('chat-container');
         const uploadForm = document.getElementById('upload-form');
         const imageInput = document.getElementById('image-input');
+        const dropZone = document.getElementById('drop-zone');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const previewName = document.getElementById('preview-name');
+        const previewSize = document.getElementById('preview-size');
+        const previewRemove = document.getElementById('preview-remove');
+        const submitBtn = document.getElementById('submit-btn');
+        const emptyState = document.getElementById('empty-state');
+        
+        let selectedFile = null;
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB 限制
+        const REQUEST_TIMEOUT = 60000; // 60秒超时
 
-        function appendMessage(role, content, imageUrl = null) {
+        function hideEmptyState() {
+            if (emptyState) emptyState.style.display = 'none';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('请选择有效的图片文件');
+                return;
+            }
+            
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`文件太大，请选择小于 ${formatFileSize(MAX_FILE_SIZE)} 的图片`);
+                return;
+            }
+            
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewName.textContent = file.name;
+                previewSize.textContent = formatFileSize(file.size);
+                dropZone.style.display = 'none';
+                previewContainer.classList.add('active');
+                submitBtn.disabled = false;
+            };
+            reader.onerror = () => {
+                alert('读取文件失败，请重试');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearPreview() {
+            selectedFile = null;
+            previewImage.src = '';
+            previewName.textContent = '';
+            previewSize.textContent = '';
+            dropZone.style.display = 'block';
+            previewContainer.classList.remove('active');
+            submitBtn.disabled = true;
+            imageInput.value = '';
+        }
+
+        // 点击上传
+        dropZone.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        // 拖拽上传
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        // 移除预览
+        previewRemove.addEventListener('click', clearPreview);
+
+        function appendMessage(role, content, imageUrl = null, resultData = null) {
+            hideEmptyState();
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('message', role);
 
-            msgDiv.innerHTML = `<b>${role === 'user' ? '你' : 'AI'}:</b> ${content}`;
+            let html = `<div class="message-header">${role === 'user' ? '你' : 'AI'}</div>`;
+            html += `<div>${content}</div>`;
 
             if (imageUrl) {
-                const img = document.createElement('img');
-                img.src = imageUrl;
-                msgDiv.appendChild(img);
+                html += `<img src="${imageUrl}" alt="上传的图片">`;
             }
 
+            if (resultData) {
+                html += `
+                    <div class="result-card">
+                        <div class="result-label">识别结果</div>
+                        <div class="result-value">${resultData.className}</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${resultData.confidence}%"></div>
+                        </div>
+                        <div class="result-label" style="margin-top: 8px;">置信度: ${resultData.confidence}%</div>
+                    </div>
+                `;
+            }
+
+            msgDiv.innerHTML = html;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        function showLoading() {
+            hideEmptyState();
+            const loading = document.createElement('div');
+            loading.className = 'loading-indicator';
+            loading.id = 'loading-indicator';
+            loading.innerHTML = `
+                <div class="loading-spinner"></div>
+                <span class="loading-text">AI 正在分析图片...</span>
+            `;
+            chatContainer.appendChild(loading);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading-indicator');
+            if (loading) loading.remove();
+        }
+
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!imageInput.files.length) return;
+            if (!selectedFile) return;
 
-            const file = imageInput.files[0];
+            // 禁用提交按钮防止重复提交
+            submitBtn.disabled = true;
+
+            // 保存文件名，因为 clearPreview 会清空 selectedFile
+            const currentFileName = selectedFile.name;
+            
             const reader = new FileReader();
             reader.onload = async function(event) {
                 const base64Url = event.target.result;
                 const base64Data = base64Url.split(',')[1];
 
-                appendMessage('user', `已上传图片: ${file.name}`, base64Url);
+                appendMessage('user', `上传图片: ${currentFileName}`, base64Url);
+                clearPreview();
+                showLoading();
 
-                const payload = { filename: file.name, image: base64Data };
+                const payload = { filename: currentFileName, image: base64Data };
+
+                // 创建超时控制器
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
                 try {
                     const response = await fetch('/upload/send', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        credentials: 'include',
+                        body: JSON.stringify(payload),
+                        signal: controller.signal
                     });
 
-                    if (!response.ok) throw new Error("上传失败");
+                    clearTimeout(timeoutId);
+                    hideLoading();
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || `请求失败: ${response.status}`);
+                    }
 
                     const data = await response.json();
-                    const aiText = `识别结果: ${data.class_name} (置信度: ${Math.round(data.confidence * 100)}%)`;
-                    appendMessage('assistant', aiText);
+                    
+                    if (data.status === 'error') {
+                        throw new Error(data.message || '识别失败');
+                    }
+                    
+                    const confidence = Math.round(data.confidence * 100);
+                    appendMessage('assistant', '识别完成！', null, {
+                        className: data.class_name,
+                        confidence: confidence
+                    });
 
                 } catch (err) {
-                    appendMessage('assistant', `[错误] 无法连接到服务器或上传失败: ${err.message}`);
+                    clearTimeout(timeoutId);
+                    hideLoading();
+                    console.error('Upload error:', err);
+                    
+                    let errorMessage = err.message;
+                    if (err.name === 'AbortError') {
+                        errorMessage = '请求超时，请稍后重试';
+                    }
+                    appendMessage('assistant', `[错误] ${errorMessage}`);
                 }
-
-                imageInput.value = '';
             };
 
-            reader.readAsDataURL(file);
+            reader.onerror = function() {
+                hideLoading();
+                appendMessage('assistant', '[错误] 读取文件失败');
+            };
+
+            reader.readAsDataURL(selectedFile);
         });
     </script>
-
 </body>
 </html>

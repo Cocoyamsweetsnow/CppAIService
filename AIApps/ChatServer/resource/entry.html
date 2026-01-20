@@ -3,171 +3,475 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>卡码AI助手</title>
+<title>AI助手</title>
 <style>
     /* 全局样式 */
-    body {
-        font-family: "Microsoft YaHei", Arial, sans-serif;
+    * {
+        box-sizing: border-box;
         margin: 0;
         padding: 0;
+    }
+
+    body {
+        font-family: "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        min-height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        background-color: #f5f5f5;
-        color: #333;
+        background: linear-gradient(135deg, #0c0f1a 0%, #1a1f3a 50%, #0d1025 100%);
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* 动态背景 - 流动渐变 */
+    body::before {
+        content: '';
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 20% 80%, rgba(0, 195, 255, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(120, 0, 255, 0.12) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(0, 255, 200, 0.08) 0%, transparent 40%);
+        animation: floatBg 20s ease-in-out infinite;
+        z-index: 0;
+    }
+
+    @keyframes floatBg {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(2%, 2%) rotate(2deg); }
+        50% { transform: translate(-1%, 3%) rotate(-1deg); }
+        75% { transform: translate(-2%, -1%) rotate(1deg); }
+    }
+
+    /* 星空粒子 */
+    .stars {
+        position: fixed;
+        width: 3px;
+        height: 3px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 3s ease-in-out infinite;
+        z-index: 1;
+    }
+
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.2; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* 浮动光球 */
+    .orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: 0;
+        animation: orbFloat 15s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 300px;
+        height: 300px;
+        background: rgba(0, 195, 255, 0.3);
+        top: 10%;
+        left: 15%;
+        animation-delay: 0s;
+    }
+
+    .orb-2 {
+        width: 250px;
+        height: 250px;
+        background: rgba(138, 43, 226, 0.25);
+        bottom: 15%;
+        right: 10%;
+        animation-delay: -5s;
+    }
+
+    .orb-3 {
+        width: 200px;
+        height: 200px;
+        background: rgba(0, 255, 170, 0.2);
+        top: 60%;
+        left: 60%;
+        animation-delay: -10s;
+    }
+
+    @keyframes orbFloat {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        25% { transform: translate(30px, -20px) scale(1.05); }
+        50% { transform: translate(-20px, 30px) scale(0.95); }
+        75% { transform: translate(-30px, -10px) scale(1.02); }
+    }
+
+    /* 主容器 */
+    .main-wrapper {
+        position: relative;
+        z-index: 10;
+        text-align: center;
     }
 
     h1.title {
-        font-size: 36px;
-        font-weight: bold;
+        font-size: 42px;
+        font-weight: 700;
         text-align: center;
-        margin-bottom: 30px;
-        background: linear-gradient(to right, #007bff, #00c6ff);
+        margin-bottom: 40px;
+        background: linear-gradient(135deg, #00c3ff 0%, #00ffcc 50%, #7b68ee 100%);
+        background-size: 200% 200%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 4s ease infinite;
+        text-shadow: 0 0 40px rgba(0, 195, 255, 0.3);
+        letter-spacing: 3px;
     }
 
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    /* 卡片容器 */
     .container {
-        width: 360px;
-        padding: 25px;
-        background: #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        box-sizing: border-box;
-        text-align: center;
-        transition: all 0.3s;
+        width: 400px;
+        padding: 40px 35px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3),
+                    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                    0 0 80px rgba(0, 195, 255, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .container:hover {
-        box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 35px 60px rgba(0, 0, 0, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                    0 0 100px rgba(0, 195, 255, 0.15);
     }
 
     h2 {
-        font-size: 24px;
-        margin-bottom: 20px;
-        color: #333;
+        font-size: 26px;
+        margin-bottom: 30px;
+        color: #fff;
+        font-weight: 600;
+        letter-spacing: 1px;
     }
 
     .form-group {
-        margin-bottom: 18px;
+        margin-bottom: 22px;
         text-align: left;
     }
 
     .form-group label {
         display: block;
-        font-size: 14px;
-        color: #555;
-        margin-bottom: 5px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 8px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-wrapper svg {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        color: rgba(255, 255, 255, 0.4);
+        transition: color 0.3s;
     }
 
     .form-group input {
-        width: calc(100% - 20px);
-        padding: 10px;
-        font-size: 14px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background: #f9f9f9;
+        width: 100%;
+        padding: 14px 14px 14px 44px;
+        font-size: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
         outline: none;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .form-group input::placeholder {
+        color: rgba(255, 255, 255, 0.35);
     }
 
     .form-group input:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 8px rgba(0,123,255,0.3);
-        background: #fff;
+        border-color: rgba(0, 195, 255, 0.5);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 0 4px rgba(0, 195, 255, 0.1),
+                    0 0 20px rgba(0, 195, 255, 0.15);
     }
 
+    .form-group input:focus + svg,
+    .form-group input:focus ~ svg {
+        color: #00c3ff;
+    }
+
+    .input-wrapper:focus-within svg {
+        color: #00c3ff;
+    }
+
+    /* 按钮样式 */
     .btn {
         width: 100%;
-        padding: 12px;
+        padding: 15px;
         font-size: 16px;
-        background-color: #007bff;
+        font-weight: 600;
         color: #fff;
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         cursor: pointer;
-        font-weight: bold;
-        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #00c3ff 0%, #00e1ff 50%, #00ffcc 100%);
+        background-size: 200% 200%;
+        box-shadow: 0 8px 25px rgba(0, 195, 255, 0.35),
+                    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: 1px;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
     }
 
     .btn:hover {
-        background-color: #0056b3;
-        transform: scale(1.03);
+        background-position: 100% 50%;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(0, 195, 255, 0.45),
+                    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
     }
 
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    /* 切换链接 */
     .switch {
-        margin-top: 15px;
+        margin-top: 25px;
         font-size: 14px;
-        color: #666;
+        color: rgba(255, 255, 255, 0.6);
     }
 
     .switch a {
-        color: #007bff;
+        color: #00c3ff;
         text-decoration: none;
         cursor: pointer;
+        font-weight: 500;
+        position: relative;
+        transition: color 0.3s;
     }
 
-    .switch a:hover { text-decoration: underline; }
+    .switch a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #00c3ff, #00ffcc);
+        transition: width 0.3s;
+    }
+
+    .switch a:hover {
+        color: #00ffcc;
+    }
+
+    .switch a:hover::after {
+        width: 100%;
+    }
 
     #register-container { display: none; }
 
-    /* 成功提示框 */
+    /* 提示框 */
     #success-alert {
         position: fixed;
-        top: 20px;
+        top: 30px;
         left: 50%;
-        transform: translateX(-50%);
-        background: #007bff;
+        transform: translateX(-50%) translateY(-100px);
+        background: rgba(0, 195, 255, 0.95);
+        backdrop-filter: blur(10px);
         color: #fff;
-        padding: 12px 25px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        display: none;
+        padding: 16px 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 195, 255, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
         z-index: 1000;
-        font-weight: bold;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #success-alert.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+
+    /* 分割线 */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 25px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    }
+
+    .divider span {
+        padding: 0 15px;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 12px;
+    }
+
+    /* Logo动画 */
+    .logo-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #00c3ff 0%, #00ffcc 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0, 195, 255, 0.3);
+        animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    .logo-icon svg {
+        width: 32px;
+        height: 32px;
+        color: #fff;
+    }
+
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    /* 响应式 */
+    @media (max-width: 480px) {
+        .container {
+            width: 90%;
+            padding: 30px 25px;
+        }
+        h1.title {
+            font-size: 32px;
+        }
     }
 </style>
 </head>
 <body>
+
+<!-- 浮动光球 -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
 <div id="success-alert">提示信息</div>
 
-<div>
+<div class="main-wrapper">
     <h1 class="title">卡码AI助手</h1>
 
     <!-- 登录 -->
     <div class="container" id="login-container">
-        <h2>登录</h2>
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+        </div>
+        <h2>欢迎回来</h2>
         <form id="login-form">
             <div class="form-group">
                 <label for="login-username">用户名</label>
-                <input type="text" id="login-username" placeholder="请输入用户名" required>
+                <div class="input-wrapper">
+                    <input type="text" id="login-username" placeholder="请输入用户名" required>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
             </div>
             <div class="form-group">
                 <label for="login-password">密码</label>
-                <input type="password" id="login-password" placeholder="请输入密码" required>
+                <div class="input-wrapper">
+                    <input type="password" id="login-password" placeholder="请输入密码" required>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
             </div>
-            <button type="submit" class="btn">登录</button>
+            <button type="submit" class="btn">登 录</button>
         </form>
+        <div class="divider"><span>OR</span></div>
         <div class="switch">
-            没有账号？<a onclick="showRegister()">去注册账号</a>
+            还没有账号？<a onclick="showRegister()">立即注册</a>
         </div>
     </div>
 
     <!-- 注册 -->
     <div class="container" id="register-container">
-        <h2>注册</h2>
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+        </div>
+        <h2>创建账号</h2>
         <form id="register-form">
             <div class="form-group">
                 <label for="register-username">用户名</label>
-                <input type="text" id="register-username" placeholder="请输入用户名" required>
+                <div class="input-wrapper">
+                    <input type="text" id="register-username" placeholder="请输入用户名" required>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
             </div>
             <div class="form-group">
                 <label for="register-password">密码</label>
-                <input type="password" id="register-password" placeholder="请输入密码" required>
+                <div class="input-wrapper">
+                    <input type="password" id="register-password" placeholder="请输入密码" required>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
             </div>
-            <button type="submit" class="btn">注册</button>
+            <button type="submit" class="btn">注 册</button>
         </form>
+        <div class="divider"><span>OR</span></div>
         <div class="switch">
             已有账号？<a onclick="showLogin()">返回登录</a>
         </div>
@@ -175,60 +479,105 @@
 </div>
 
 <script>
-function showAlert(message){
+// 生成星空粒子
+for (let i = 0; i < 60; i++) {
+    const star = document.createElement('div');
+    star.className = 'stars';
+    star.style.top = Math.random() * 100 + 'vh';
+    star.style.left = Math.random() * 100 + 'vw';
+    star.style.animationDuration = (2 + Math.random() * 3) + 's';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    document.body.appendChild(star);
+}
+
+function showAlert(message, isError = false) {
     const alertBox = document.getElementById('success-alert');
     alertBox.textContent = message;
-    alertBox.style.display = 'block';
-    setTimeout(()=>{alertBox.style.display='none';},1000);
+    alertBox.style.background = isError ? 'rgba(255, 80, 80, 0.95)' : 'rgba(0, 195, 255, 0.95)';
+    alertBox.classList.add('show');
+    setTimeout(() => { alertBox.classList.remove('show'); }, 2500);
 }
-function showRegister(){ document.getElementById('login-container').style.display='none'; document.getElementById('register-container').style.display='block'; }
-function showLogin(){ document.getElementById('register-container').style.display='none'; document.getElementById('login-container').style.display='block'; }
+
+function showRegister() {
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('register-container').style.display = 'block';
+    document.getElementById('register-container').style.animation = 'fadeIn 0.4s ease';
+}
+
+function showLogin() {
+    document.getElementById('register-container').style.display = 'none';
+    document.getElementById('login-container').style.display = 'block';
+    document.getElementById('login-container').style.animation = 'fadeIn 0.4s ease';
+}
+
+// 添加淡入动画
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
 
 // 登录
-document.getElementById('login-form').addEventListener('submit', function(e){
+document.getElementById('login-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const username=document.getElementById('login-username').value;
-    const password=document.getElementById('login-password').value;
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
 
-    fetch('/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({username,password})
-    }).then(response=>{
-        if(response.status===403){ showAlert('账号已在其他地方登录！'); throw new Error('已在其他地方登录'); }
+    fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    }).then(response => {
+        if (response.status === 403) {
+            showAlert('账号已在其他地方登录！', true);
+            throw new Error('已在其他地方登录');
+        }
         const contentType = response.headers.get('content-type');
-        if(response.status===200){
-            if(contentType && contentType.includes('application/json')) return response.json();
+        if (response.status === 200) {
+            if (contentType && contentType.includes('application/json')) return response.json();
             else throw new Error('返回格式错误');
-        }else if(response.status===401){ showAlert('账号或密码错误！'); throw new Error('认证失败'); }
+        } else if (response.status === 401) {
+            showAlert('账号或密码错误！', true);
+            throw new Error('认证失败');
+        }
         else throw new Error('请求失败');
-    }).then(data=>{
-        if(data && data.userId){ sessionStorage.setItem('userId', data.userId); showAlert('登录成功！'); window.location.href='/menu'; }
+    }).then(data => {
+        if (data && data.userId) {
+            sessionStorage.setItem('userId', data.userId);
+            showAlert('登录成功！');
+            setTimeout(() => { window.location.href = '/menu'; }, 800);
+        }
         else throw new Error('无效的响应数据');
-    }).catch(error=>{
-        console.error('Error:',error);
-        if(!error.message.includes('已在其他地方登录')&&!error.message.includes('认证失败')) showAlert('操作失败，请重试');
+    }).catch(error => {
+        console.error('Error:', error);
+        if (!error.message.includes('已在其他地方登录') && !error.message.includes('认证失败'))
+            showAlert('操作失败，请重试', true);
     });
 });
 
 // 注册
-document.getElementById('register-form').addEventListener('submit', function(e){
+document.getElementById('register-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const username=document.getElementById('register-username').value;
-    const password=document.getElementById('register-password').value;
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
 
-    fetch('/register',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({username,password})
-    }).then(response=>{
-        if(response.status===200){
+    fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    }).then(response => {
+        if (response.status === 200) {
             showAlert('注册成功！');
-            document.getElementById('login-username').value=username;
-            document.getElementById('login-password').value=password;
-            setTimeout(showLogin,1000);
-        }else if(response.status===409){ alert('用户名已被注册，请重新输入！'); }
-    }).catch(error=>console.error('注册错误:',error));
+            document.getElementById('login-username').value = username;
+            document.getElementById('login-password').value = password;
+            setTimeout(showLogin, 1200);
+        } else if (response.status === 409) {
+            showAlert('用户名已被注册，请重新输入！', true);
+        }
+    }).catch(error => console.error('注册错误:', error));
 });
 </script>
 </body>

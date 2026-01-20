@@ -13,12 +13,6 @@ void AIHelper::setStrategy(std::shared_ptr<AIStrategy> strat) {
     strategy = strat;
 }
 
-
-// 设置默认模型
-//void AIHelper::setModel(const std::string& modelName) {
-  //  model_ = modelName;
-//}
-
 // 添加一条用户消息
 void AIHelper::addMessage(int userId,const std::string& userName, bool is_user,const std::string& userInput, std::string sessionId) {
     auto now = std::chrono::system_clock::now();

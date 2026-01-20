@@ -20,9 +20,6 @@ public:
     // 构造函数，初始化API Key
     AIHelper();
 
-    // 设置默认模型
-    //void setModel(const std::string& modelName);
-
     void setStrategy(std::shared_ptr<AIStrategy> strat);
 
     // 添加一条消息
@@ -52,14 +49,6 @@ private:
 
 private:
 
-    /*
-    * 重构代码，将其使用策略模式&&工厂模式抽离出来
-    std::string apiKey_;
-    //默认用通义千问
-    std::string model_ = "qwen-plus";
-    //对应地址
-    std::string apiUrl_ = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
-    */
     std::shared_ptr<AIStrategy> strategy;
 
     //一个用户针对一个AIHelper，messages存放用户的历史对话

@@ -9,7 +9,6 @@
 #include "../../../../HttpServer/include/utils/JsonUtil.h"
 
 
-
 class AIStrategy {
 public:
     virtual ~AIStrategy() = default;
