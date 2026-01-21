@@ -53,6 +53,9 @@ add_executable(http_server
     ${GOMOKU_SERVER_SRC}
 )
 
+# 查找 zlib
+find_package(ZLIB REQUIRED)
+
 # 链接库
 target_link_libraries(http_server
     pthread
@@ -64,6 +67,7 @@ target_link_libraries(http_server
     crypto
     ${CURL_LIBRARIES}
     ${OPENCV4_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     /usr/lib/x86_64-linux-gnu/libopencv_core.so
     /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so
     /usr/lib/x86_64-linux-gnu/libopencv_highgui.so
