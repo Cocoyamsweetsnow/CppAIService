@@ -16,7 +16,6 @@
 #include "../../../HttpServer/include/utils/MysqlUtil.h"
 #include "../../../HttpServer/include/utils/FileUtil.h"
 #include "../../../HttpServer/include/utils/JsonUtil.h"
-#include "../../../HttpServer/include/middleware/MiddlewareAll.h"
 #include"AIUtil/AISpeechProcessor.h"
 #include"AIUtil/AIHelper.h"
 #include"AIUtil/ImageRecognizer.h"
@@ -71,13 +70,6 @@ private:
 	void initializeSession();
 	void initializeRouter();
 	void initializeMiddleware();
-	void initializeRoleManager();
-	
-	// 中间件配置
-	void setupRateLimitMiddleware();
-	void setupGzipMiddleware();
-	void setupAuthMiddleware();
-	void setupAuthorizationMiddleware();
 	
 
 	void readDataFromMySQL();
@@ -115,14 +107,5 @@ private:
 	std::unordered_map<int,std::vector<std::string> > sessionsIdsMap;
 	std::mutex mutexForSessionsId;
 
-	// 中间件实例（保持引用以便后续配置）
-	std::shared_ptr<http::middleware::RateLimitMiddleware> rateLimitMiddleware_;
-	std::shared_ptr<http::middleware::GzipMiddleware> gzipMiddleware_;
-	std::shared_ptr<http::middleware::AuthMiddleware> authMiddleware_;
-	std::shared_ptr<http::middleware::AuthorizationMiddleware> authorizationMiddleware_;
-
-public:
-	// JWT工具访问（供Handler使用）
-	http::middleware::JwtUtil& getJwtUtil() { return authMiddleware_->getJwtUtil(); }
 };
 

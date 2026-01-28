@@ -398,7 +398,7 @@
 <div id="success-alert">提示信息</div>
 
 <div class="main-wrapper">
-    <h1 class="title">AI助手</h1>
+    <h1 class="title">卡码AI助手</h1>
 
     <!-- 登录 -->
     <div class="container" id="login-container">
@@ -547,13 +547,6 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
     }).then(data => {
         if (data && data.userId) {
             sessionStorage.setItem('userId', data.userId);
-            // 保存JWT Token
-            if (data.accessToken) {
-                sessionStorage.setItem('accessToken', data.accessToken);
-            }
-            if (data.refreshToken) {
-                sessionStorage.setItem('refreshToken', data.refreshToken);
-            }
             showAlert('登录成功！');
             setTimeout(() => { window.location.href = '/menu'; }, 800);
         }

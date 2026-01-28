@@ -5,41 +5,26 @@ void ChatSessionsHandler::handle(const http::HttpRequest& req, http::HttpRespons
 {
     try
     {
-        int userId = -1;
-        std::string username;
-        
-        // 优先使用JWT认证上下文（需要检查userId是否有效）
-        http::middleware::AuthContext& authContext = http::middleware::AuthMiddleware::getCurrentContext();
-        
-        if (authContext.authenticated && !authContext.userId.empty())
-        {
-            // 使用JWT认证信息
-            userId = std::stoi(authContext.userId);
-            username = authContext.username;
-            LOG_DEBUG << "Using JWT auth context for user: " << username;
-        }
-        else
-        {
-            // 回退到Session认证（兼容性）
-            auto session = server_->getSessionManager()->getSession(req, resp);
-            LOG_INFO << "session->getValue(\"isLoggedIn\") = " << session->getValue("isLoggedIn");
-            if (session->getValue("isLoggedIn") != "true")
-            {
-                json errorResp;
-                errorResp["status"] = "error";
-                errorResp["message"] = "Unauthorized";
-                std::string errorBody = errorResp.dump(4);
 
-                server_->packageResp(req.getVersion(), http::HttpResponse::k401Unauthorized,
-                    "Unauthorized", true, "application/json", errorBody.size(),
-                    errorBody, resp);
-                return;
-            }
-            
-            userId = std::stoi(session->getValue("userId"));
-            username = session->getValue("username");
-            LOG_DEBUG << "Using session auth for user: " << username;
+        auto session = server_->getSessionManager()->getSession(req, resp);
+        LOG_INFO << "session->getValue(\"isLoggedIn\") = " << session->getValue("isLoggedIn");
+        if (session->getValue("isLoggedIn") != "true")
+        {
+
+            json errorResp;
+            errorResp["status"] = "error";
+            errorResp["message"] = "Unauthorized";
+            std::string errorBody = errorResp.dump(4);
+
+            server_->packageResp(req.getVersion(), http::HttpResponse::k401Unauthorized,
+                "Unauthorized", true, "application/json", errorBody.size(),
+                errorBody, resp);
+            return;
         }
+
+
+        int userId = std::stoi(session->getValue("userId"));
+        std::string username = session->getValue("username");
         
         std::vector<std::string> sessions;  
 

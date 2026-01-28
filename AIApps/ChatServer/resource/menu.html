@@ -475,14 +475,9 @@
         
         document.getElementById('logout').addEventListener('click', () => {
             const userId = sessionStorage.getItem('userId');
-            const token = sessionStorage.getItem('accessToken');
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) {
-                headers['Authorization'] = 'Bearer ' + token;
-            }
             fetch('/user/logout', {
                 method: 'POST',
-                headers: headers,
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: userId, type: 'manual', gameType: 0 })
             })
                 .then(res => {

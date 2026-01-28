@@ -1,41 +1,7 @@
 #include"../include/AIUtil/AIHelper.h"
 #include"../include/AIUtil/MQManager.h"
 #include <stdexcept>
-#include <chrono>
-#include <filesystem>
-#include <cstdlib>
-
-namespace {
-std::string resolveAiConfigPath() {
-    const char* explicitPath = std::getenv("CHATSERVER_CONFIG_PATH");
-    if (explicitPath && std::filesystem::exists(explicitPath)) {
-        return std::string(explicitPath);
-    }
-
-    const char* resourceDir = std::getenv("CHATSERVER_RESOURCE_DIR");
-    if (resourceDir) {
-        std::filesystem::path candidate = std::filesystem::path(resourceDir) / "config.json";
-        if (std::filesystem::exists(candidate)) {
-            return candidate.string();
-        }
-    }
-
-    std::filesystem::path cwd = std::filesystem::current_path();
-    std::vector<std::filesystem::path> candidates = {
-        cwd / "AIApps/ChatServer/resource/config.json",
-        cwd / "resource/config.json",
-        cwd / "../AIApps/ChatServer/resource/config.json",
-        cwd / "../../AIApps/ChatServer/resource/config.json"
-    };
-
-    for (const auto& candidate : candidates) {
-        if (std::filesystem::exists(candidate)) {
-            return candidate.string();
-        }
-    }
-    return "";
-}
-}
+#include<chrono>
 
 // 构造函数
 AIHelper::AIHelper() {
@@ -66,12 +32,7 @@ void AIHelper::restoreMessage(const std::string& userInput,long long ms) {
 std::string AIHelper::chat(int userId,std::string userName, std::string sessionId, std::string userQuestion, std::string modelType) {
 
     //设置策略
-    try {
-        setStrategy(StrategyFactory::instance().create(modelType));
-    }
-    catch (const std::exception& e) {
-        throw std::runtime_error("模型初始化失败，请检查环境变量与模型类型: " + std::string(e.what()));
-    }
+    setStrategy(StrategyFactory::instance().create(modelType));
 
     
     if (false == strategy->isMCPModel) {
@@ -87,13 +48,7 @@ std::string AIHelper::chat(int userId,std::string userName, std::string sessionI
     }
     //说明支持MCP
     AIConfig config;
-    std::string configPath = resolveAiConfigPath();
-    if (configPath.empty()) {
-        throw std::runtime_error("未找到AI配置文件，请设置CHATSERVER_CONFIG_PATH或CHATSERVER_RESOURCE_DIR");
-    }
-    if (!config.loadFromFile(configPath)) {
-        throw std::runtime_error("AI配置文件加载失败: " + configPath);
-    }
+    config.loadFromFile("../AIApps/ChatServer/resource/config.json");
     std::string tempUserQuestion =config.buildPrompt(userQuestion);
     std::cout << "tempUserQuestion is " << tempUserQuestion << std::endl;
     messages.push_back({ tempUserQuestion, 0 });
@@ -190,10 +145,6 @@ json AIHelper::executeCurl(const json& payload) {
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payloadStr.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-    
-    // 设置超时时间，防止请求无限等待
-    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);  // 连接超时 10 秒
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 120L);        // 总超时 120 秒（AI响应可能较慢）
 
     CURLcode res = curl_easy_perform(curl);
     curl_slist_free_all(headers);
