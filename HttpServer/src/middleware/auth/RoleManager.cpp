@@ -348,8 +348,20 @@ Role RoleManager::createUserRole()
     Role role(Roles::USER, "User");
     role.description = "Standard user access";
     role.priority = 100;
+    
+    // 用户基础权限
     role.permissions.insert("user:read");
     role.permissions.insert("user:update");  // 只能更新自己的信息
+    
+    // AI聊天服务权限
+    role.permissions.insert("chat:create");  // 发送聊天消息
+    role.permissions.insert("chat:read");    // 读取聊天历史、TTS语音合成
+    role.permissions.insert("session:read"); // 获取会话列表
+    
+    // 图像识别服务权限（通过上传图片进行识别）
+    role.permissions.insert("upload:create"); // 上传文件/图片
+    role.permissions.insert("upload:read");   // 读取上传内容
+    
     return role;
 }
 

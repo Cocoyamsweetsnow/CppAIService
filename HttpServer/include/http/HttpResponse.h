@@ -14,6 +14,7 @@ public:
         k200Ok = 200,
         k204NoContent = 204,
         k301MovedPermanently = 301,
+        k302Found = 302,
         k400BadRequest = 400,
         k401Unauthorized = 401,
         k403Forbidden = 403,

@@ -17,6 +17,9 @@ ImageRecognizer::ImageRecognizer(const std::string& model_path,
 
 
     input_shape = session->GetInputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+    if (input_shape.size() < 4 || input_shape[2] <= 0 || input_shape[3] <= 0) {
+        throw std::runtime_error("Invalid model input shape for image recognizer");
+    }
     input_height = static_cast<int>(input_shape[2]);
     input_width = static_cast<int>(input_shape[3]);
 
@@ -81,16 +84,21 @@ std::string ImageRecognizer::PredictFromMat(const cv::Mat& img_raw) {
     cv::merge(channels, img);
 
     // NHWC -> NCHW
-    cv::dnn::blobFromImage(img, img);
+    cv::Mat blob;
+    cv::dnn::blobFromImage(img, blob, 1.0, cv::Size(input_width, input_height),
+        cv::Scalar(), false, false, CV_32F);
+    if (blob.empty()) {
+        throw std::runtime_error("Failed to create input tensor from image");
+    }
 
     std::vector<int64_t> dims = { 1, 3, input_height, input_width };
-    size_t input_tensor_size = 1 * 3 * input_height * input_width;
+    size_t input_tensor_size = static_cast<size_t>(blob.total());
 
     Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(
         OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
 
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
-        memory_info, img.ptr<float>(), input_tensor_size, dims.data(), dims.size());
+        memory_info, blob.ptr<float>(), input_tensor_size, dims.data(), dims.size());
 
     // Run inference
     const char* input_names[] = { input_name.c_str() };

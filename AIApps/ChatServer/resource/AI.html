@@ -548,6 +548,16 @@
         const newChatBtn = document.getElementById('newChatBtn');
         const emptyState = document.getElementById('empty-state');
 
+        // 获取带认证的请求头
+        function getAuthHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            const token = sessionStorage.getItem('accessToken');
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+            return headers;
+        }
+
         // 自动调整textarea高度
         questionInput.addEventListener('input', function() {
             this.style.height = 'auto';
@@ -566,7 +576,7 @@
             try {
                 const res = await fetch('/chat/tts', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ text })
                 });
                 const data = await res.json();
@@ -659,7 +669,7 @@
                 try {
                     const res = await fetch('/chat/history', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: getAuthHeaders(),
                         body: JSON.stringify({ sessionId: currentSessionId })
                     });
                     const data = await res.json();
@@ -704,7 +714,7 @@
                 try {
                     const response = await fetch('/chat/send-new-session', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: getAuthHeaders(),
                         body: JSON.stringify({ question, modelType: modelTypeSelect.value })
                     });
                     const data = await response.json();
@@ -736,7 +746,7 @@
                 try {
                     const response = await fetch('/chat/send', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: getAuthHeaders(),
                         body: JSON.stringify({ question, modelType: modelTypeSelect.value, sessionId: currentSessionId })
                     });
                     const data = await response.json();
@@ -764,7 +774,7 @@
             try {
                 const res = await fetch('/chat/history', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ sessionId: currentSessionId })
                 });
                 const data = await res.json();
@@ -789,7 +799,9 @@
 
         async function loadSessions() {
             try {
-                const res = await fetch('/chat/sessions');
+                const res = await fetch('/chat/sessions', {
+                    headers: getAuthHeaders()
+                });
                 const data = await res.json();
                 if (data.success && Array.isArray(data.sessions)) {
                     data.sessions.forEach(s => {

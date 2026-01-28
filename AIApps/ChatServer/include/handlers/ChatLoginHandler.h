@@ -13,7 +13,11 @@ public:
     void handle(const http::HttpRequest& req, http::HttpResponse* resp) override;
 
 private:
+    // 查询用户ID
     int queryUserId(const std::string& username, const std::string& password);
+    
+    // 查询用户角色
+    std::vector<std::string> queryUserRoles(int userId);
 
 private:
     ChatServer* server_;

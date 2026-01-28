@@ -1,0 +1,126 @@
+{
+  "rateLimit": {
+    "enabled": true,
+    "algorithm": "token_bucket",
+    "maxRequests": 100,
+    "windowSizeSeconds": 60,
+    "tokenRefillRate": 10.0,
+    "bucketCapacity": 100,
+    "perIpLimit": true,
+    "limitExceededMessage": "请求过于频繁，请稍后再试",
+    "whitelistIps": ["127.0.0.1", "::1", "localhost"]
+  },
+  
+  "gzip": {
+    "enabled": true,
+    "compressionLevel": 6,
+    "minCompressSize": 1024,
+    "maxCompressSize": 5242880
+  },
+  
+  "jwt": {
+    "secretKey": "ChatServer-Secret-Key-2024-Very-Long-And-Secure",
+    "issuer": "ChatServer",
+    "audience": "ChatClient",
+    "accessTokenExpiry": 7200,
+    "refreshTokenExpiry": 604800,
+    "algorithm": "HS256"
+  },
+  
+  "auth": {
+    "enabled": true,
+    "type": "jwt",
+    "unauthorizedMessage": "请先登录",
+    "excludedPaths": [
+      "/",
+      "/entry",
+      "/menu",
+      "/upload",
+      "/login",
+      "/register",
+      "/api/auth/*",
+      "/health",
+      "/ping",
+      "/static/*",
+      "/public/*",
+      "*.html",
+      "*.css",
+      "*.js",
+      "*.ico"
+    ]
+  },
+  
+  "authorization": {
+    "enabled": true,
+    "defaultAllow": true,
+    "useRoleManager": true,
+    "forbiddenMessage": "权限不足，无法访问此资源",
+    "rules": [
+      {
+        "path": "/admin/*",
+        "roles": ["admin", "super_admin"]
+      },
+      {
+        "path": "/api/admin/*",
+        "roles": ["admin", "super_admin"]
+      },
+      {
+        "path": "/chat/send",
+        "resource": "chat",
+        "action": "create",
+        "methods": ["POST"]
+      },
+      {
+        "path": "/chat/send-new-session",
+        "resource": "chat",
+        "action": "create",
+        "methods": ["POST"]
+      },
+      {
+        "path": "/chat/history",
+        "resource": "chat",
+        "action": "read",
+        "methods": ["POST"]
+      },
+      {
+        "path": "/chat/sessions",
+        "resource": "session",
+        "action": "read",
+        "methods": ["GET"]
+      },
+      {
+        "path": "/upload/send",
+        "resource": "upload",
+        "action": "create",
+        "methods": ["POST"]
+      },
+      {
+        "path": "/chat/tts",
+        "resource": "chat",
+        "action": "read",
+        "methods": ["POST"]
+      }
+    ]
+  },
+  
+  "roles": {
+    "initializeDefaults": true,
+    "customRoles": [
+      {
+        "id": "vip_user",
+        "name": "VIP用户",
+        "description": "VIP用户，拥有更多功能",
+        "permissions": ["chat:*", "upload:*", "session:*"],
+        "parentRoles": ["user"]
+      }
+    ],
+    "customPermissions": [
+      {
+        "id": "chat:unlimited",
+        "name": "无限聊天",
+        "resource": "chat",
+        "action": "unlimited"
+      }
+    ]
+  }
+}
